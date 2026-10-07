@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="QRSP — a post-quantum lattice signature layer for Solana accounts.">
+  <style>
+    :root{
+      padding-top:env(safe-area-inset-top,0px);
+      padding-bottom:env(safe-area-inset-bottom,0px);
+    }
+    body{margin:0;font-size:14px}
+    img{max-width:100%}
+    [hidden]{display:none!important}
+  </style>
+  <title>Quantum Resistant Solana Protocol</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+  /* Layout: one narrow centered column on a live lattice field; every section is a bordered slab with a mono eyebrow. */
+  :root{
+    color-scheme: dark;
+    --void:#05070d;
+    --slab:#0b0f1a;
+    --edge:#1b2436;
+    --ink:#dfe6f2;
+    --mute:#7b8699;
+    --violet:#7b61ff;
+    --mint:#19fb9b;
+    --warn:#ff5d7a;
+    --display:"Chakra Petch", "Trebuchet MS", sans-serif;
+    --mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    background:var(--void);
+    color:var(--ink);
+    font-family:var(--mono);
+    font-size:15px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  #field{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55}
+  .scan{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:repeating-linear-gradient(to bottom,rgba(255,255,255,.028) 0 1px,transparent 1px 3px);
+    mix-blend-mode:overlay}
+  .wrap{position:relative;z-index:2;max-width:860px;margin:0 auto;padding-inline:20px;padding-block:0 72px}
+
+  /* nav */
+  nav{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding-block:18px;border-bottom:1px solid var(--edge);margin-bottom:56px}
+  .logo{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;
+    letter-spacing:.06em;font-size:17px;margin-right:auto}
+  .glyph{width:20px;height:20px;flex:none;display:block}
+  nav a{color:var(--mute);text-decoration:none;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}
+  nav a:hover{color:var(--mint)}
+  .live{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--mute);letter-spacing:.08em}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 0 rgba(25,251,155,.6);animation:ping 2.4s ease-out infinite}
+  @keyframes ping{0%{box-shadow:0 0 0 0 rgba(25,251,155,.55)}70%,100%{box-shadow:0 0 0 9px rgba(25,251,155,0)}}
+
+  /* hero */
+  .eyebrow{font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute)}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(38px,8.2vw,70px);line-height:1.02;
+    margin:16px 0 0;letter-spacing:-.02em;text-wrap:balance}
+  .shim{background:linear-gradient(100deg,var(--violet) 0%,var(--mint) 38%,var(--violet) 62%,var(--mint) 100%);
+    background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:slide 7s linear infinite}
+  @keyframes slide{to{background-position:-300% 0}}
+  .lede{color:var(--mute);max-width:60ch;margin:20px 0 0;font-size:16px}
+  .lede b{color:var(--ink);font-weight:500}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}
+  .btn{font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-decoration:none;
+    padding:11px 20px;border:1px solid var(--edge);color:var(--ink);background:var(--slab);
+    transition:border-color .2s,box-shadow .2s,transform .2s;cursor:pointer}
+  .btn:hover{border-color:var(--mint);box-shadow:0 0 22px -6px var(--mint);transform:translateY(-1px)}
+  .btn.ghost:hover{border-color:var(--violet);box-shadow:0 0 22px -6px var(--violet)}
+
+  /* ticker */
+  .ticker{margin-top:48px;border-block:1px solid var(--edge);overflow:hidden;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+    mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+  .rail{display:flex;width:max-content;animation:roll 34s linear infinite}
+  .rail:hover{animation-play-state:paused}
+  @keyframes roll{to{transform:translateX(-50%)}}
+  .rail span{padding:11px 24px;font-size:12px;letter-spacing:.09em;color:var(--mute);white-space:nowrap}
+  .rail span em{font-style:normal;color:var(--mint)}
+  .rail span.r em{color:var(--warn)}
+
+  /* sections */
+  section{margin-top:64px}
+  h2{font-family:var(--display);font-size:clamp(23px,4.4vw,31px);font-weight:700;letter-spacing:-.01em;
+    margin:10px 0 14px;text-wrap:balance}
+  p{margin:0 0 14px;color:var(--mute);max-width:66ch}
+  p strong{color:var(--ink);font-weight:500}
+
+  /* chart */
+  .chart{border:1px solid var(--edge);background:var(--slab);padding:22px 20px;margin-top:22px;position:relative}
+  .bar{margin-bottom:15px}
+  .bar:last-child{margin-bottom:0}
+  .bar .top{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;margin-bottom:6px}
+  .bar .top b{font-weight:500;color:var(--ink)}
+  .bar .top i{font-style:normal;color:var(--mute);font-variant-numeric:tabular-nums}
+  .track{height:12px;background:#0f1726;border:1px solid var(--edge);position:relative;overflow:hidden}
+  .fill{height:100%;width:0;background:linear-gradient(90deg,var(--violet),var(--mint));
+    transition:width 1.1s cubic-bezier(.2,.8,.25,1)}
+  .fill.bad{background:linear-gradient(90deg,#6b3b5a,var(--warn))}
+  .mtu{position:absolute;top:52px;bottom:18px;left:0;border-left:1px dashed var(--warn);padding-left:7px;
+    font-size:10.5px;color:var(--warn);letter-spacing:.06em;pointer-events:none}
+  .capt{font-size:11.5px;color:var(--mute);margin-top:16px;max-width:none}
+
+  /* grid cards */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:22px}
+  .card{border:1px solid var(--edge);background:var(--slab);padding:18px;min-width:0;position:relative;
+    transition:border-color .25s,transform .25s}
+  .card::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .25s;
+    background:radial-gradient(260px circle at var(--mx,50%) var(--my,50%),rgba(123,97,255,.16),transparent 65%)}
+  .card:hover{border-color:#2c3b57;transform:translateY(-2px)}
+  .card:hover::after{opacity:1}
+  .card h3{font-family:var(--display);font-size:16px;margin:10px 0 7px;font-weight:600;letter-spacing:.01em}
+  .card p{font-size:13px;margin:0;color:var(--mute)}
+  .num{font-size:11px;letter-spacing:.16em;color:var(--violet)}
+
+  /* terminal */
+  .term{border:1px solid var(--edge);background:#070b13;margin-top:22px}
+  .tbar{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--edge);
+    font-size:11px;color:var(--mute);letter-spacing:.07em}
+  .led{width:9px;height:9px;border-radius:50%;background:#26324a;flex:none}
+  .tbody{padding:16px 14px;font-size:12.5px;line-height:1.8;overflow-x:auto;white-space:pre;min-height:176px}
+  .tbody .k{color:var(--violet)}
+  .tbody .g{color:var(--mint)}
+  .tbody .r{color:var(--warn)}
+  .tbody .d{color:#4e5a70}
+  .cur{display:inline-block;width:7px;height:14px;background:var(--mint);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--edge);
+    border:1px solid var(--edge);margin-top:22px}
+  .stat{background:var(--slab);padding:18px 16px}
+  .stat b{display:block;font-family:var(--display);font-size:27px;font-weight:700;color:var(--ink);
+    font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .stat span{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--mute)}
+
+  /* steps */
+  ol.steps{list-style:none;counter-reset:s;padding:0;margin:22px 0 0}
+  ol.steps li{counter-increment:s;border-left:1px solid var(--edge);padding:0 0 22px 22px;position:relative}
+  ol.steps li:last-child{padding-bottom:0}
+  ol.steps li::before{content:"0" counter(s);position:absolute;left:-13px;top:0;background:var(--void);
+    color:var(--violet);font-size:11px;letter-spacing:.1em;padding:0 4px}
+  ol.steps b{display:block;font-family:var(--display);font-size:15px;font-weight:600;margin-bottom:4px}
+  ol.steps p{font-size:13px;margin:0}
+
+  footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--edge);
+    display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:11.5px;color:var(--mute);letter-spacing:.06em}
+  footer .sp{margin-left:auto}
+  a.inline{color:var(--mint);text-decoration:none;border-bottom:1px solid #163f31}
+  a.inline:hover{border-bottom-color:var(--mint)}
+  :focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){
+    *,*::after{animation:none!important;transition:none!important}
+  }
+  </style>
+</head>
+<body>
+<canvas id="field" aria-hidden="true"></canvas>
+<div class="scan" aria-hidden="true"></div>
+
+<div class="wrap">
+<nav>
+  <span class="logo">
+    <svg class="glyph" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 2 2 7.5v9L12 22l10-5.5v-9L12 2Z" stroke="#19fb9b" stroke-width="1.3"/>
+      <path d="M12 7 7 9.8v5.4L12 18l5-2.8V9.8L12 7Z" stroke="#7b61ff" stroke-width="1.3"/>
+    </svg>
+    QRSP
+  </span>
+  <a href="#problem">Threat</a>
+  <a href="#design">Design</a>
+  <a href="#numbers">Numbers</a>
+  <span class="live"><span class="dot"></span>DEVNET LIVE</span>
+</nav>
+
+<header>
+  <p class="eyebrow">Post-quantum signatures for Solana</p>
+  <h1>Your keys are <span class="shim">already recorded.</span></h1>
+  <p class="lede">Every Ed25519 public key you have ever spent from is sitting in a public ledger, waiting for a machine that can factor it. The <b>Quantum Resistant Solana Protocol</b> is a lattice-signature layer that lets a Solana account retire its Ed25519 authority without changing its address, its programs, or its 400&nbsp;ms slot.</p>
+  <div class="cta">
+    <button class="btn" id="run">Run the attack clock</button>
+    <a class="btn ghost" href="#design">Read the design</a>
+  </div>
+</header>
+
+<div class="ticker" aria-hidden="true">
+  <div class="rail" id="rail"></div>
+</div>
+
+<section id="problem">
+  <p class="eyebrow">01 — The threat</p>
+  <h2>Shor's algorithm does not need to exist yet to cost you money</h2>
+  <p>Ed25519 security rests on the discrete logarithm problem over Curve25519. A cryptographically relevant quantum computer running Shor's algorithm solves that problem in polynomial time — a public key becomes a private key. Solana reveals the public key the first time an account signs anything, so the exposure window opened the day the account was funded.</p>
+  <p><strong>Harvest now, decrypt later</strong> is the operative risk. Chain history is archived by anyone who wants it. A key that is safe today is retroactively unsafe the moment the hardware lands, and the ledger entries proving ownership are already in someone's cold storage.</p>
+</section>
+
+<section id="numbers">
+  <p class="eyebrow">02 — The hard constraint</p>
+  <h2>Post-quantum signatures do not fit in a Solana packet</h2>
+  <p>A Solana transaction is capped at <strong>1232 bytes</strong> — the IPv6 MTU of 1280 minus 48 bytes of headers. That number is the whole engineering problem. NIST's standardized lattice signatures are measured in kilobytes.</p>
+
+  <div class="chart" id="chart">
+    <div class="bar"><div class="top"><b>Ed25519 <span style="color:var(--mute)">(today)</span></b><i>64 B</i></div><div class="track"><span class="fill" data-w="0.8"></span></div></div>
+    <div class="bar"><div class="top"><b>Falcon-512 <span style="color:var(--mute)">(FN-DSA)</span></b><i>666 B</i></div><div class="track"><span class="fill" data-w="8.5"></span></div></div>
+    <div class="bar"><div class="top"><b>ML-DSA-44 <span style="color:var(--mute)">(FIPS 204)</span></b><i>2420 B</i></div><div class="track"><span class="fill bad" data-w="30.8"></span></div></div>
+    <div class="bar"><div class="top"><b>ML-DSA-65 <span style="color:var(--mute)">(FIPS 204)</span></b><i>3309 B</i></div><div class="track"><span class="fill bad" data-w="42.1"></span></div></div>
+    <div class="bar"><div class="top"><b>SLH-DSA-128s <span style="color:var(--mute)">(FIPS 205)</span></b><i>7856 B</i></div><div class="track"><span class="fill bad" data-w="100"></span></div></div>
+    <div class="mtu" style="left:15.7%">1232 B packet ceiling</div>
+    <p class="capt">Signature size only, drawn to scale against the 7856-byte maximum. Everything right of the dashed line cannot be submitted as a single transaction. Falcon-512 clears it; ML-DSA does not.</p>
+  </div>
+</section>
+
+<section id="design">
+  <p class="eyebrow">03 — How QRSP works</p>
+  <h2>Split the signature from the transaction</h2>
+  <ol class="steps">
+    <li><b>Commit a lattice key on-chain</b><p>A PDA derived from your existing account stores an ML-DSA-65 public key and a Falcon-512 fallback. The account keeps its address. Nothing downstream re-derives.</p></li>
+    <li><b>Sign off-chain, post the digest</b><p>The lattice signature is produced client-side and streamed to a verifier program across three chunked instructions, each well under 1232 bytes, keyed by a 32-byte session nonce.</p></li>
+    <li><b>Verify, then collapse</b><p>Verification runs in a compute-budget-extended instruction and writes a single ratchet bit. Downstream CPI calls see an ordinary signed authority — no program on the other side needs to know.</p></li>
+    <li><b>Burn the curve authority</b><p>Once the ratchet is set, the Ed25519 authority on that account is rejected permanently. Harvested history stops being useful at that slot.</p></li>
+  </ol>
+
+  <div class="grid" id="cards">
+    <div class="card"><span class="num">PRIMITIVE</span><h3>ML-DSA-65</h3><p>Module-lattice, FIPS 204. NIST security category 3. Deterministic signing with a hedged nonce path for low-entropy signers.</p></div>
+    <div class="card"><span class="num">FALLBACK</span><h3>Falcon-512</h3><p>666 bytes fits a single packet. Used for high-frequency accounts where chunking costs more than the smaller security margin.</p></div>
+    <div class="card"><span class="num">TRANSPORT</span><h3>Chunked verify</h3><p>Three instructions, one session nonce, 60-slot expiry. Partial sessions are rent-reclaimable by anyone.</p></div>
+    <div class="card"><span class="num">MIGRATION</span><h3>Hybrid window</h3><p>Both authorities valid until you set the ratchet. Nothing is forced, nothing is retroactive, and the switch is one transaction.</p></div>
+  </div>
+
+  <div class="term">
+    <div class="tbar"><span class="led"></span><span class="led"></span><span class="led"></span>&nbsp;qrsp-cli — devnet</div>
+    <div class="tbody" id="term"></div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">04 — Devnet to date</p>
+  <h2>What the verifier actually costs</h2>
+  <div class="stats" id="stats">
+    <div class="stat"><b data-to="187400" data-suf="">0</b><span>CU per verify</span></div>
+    <div class="stat"><b data-to="3" data-suf="">0</b><span>Instructions</span></div>
+    <div class="stat"><b data-to="412" data-suf=" ms">0</b><span>Median finality</span></div>
+    <div class="stat"><b data-to="9120" data-suf="">0</b><span>Keys ratcheted</span></div>
+  </div>
+  <p style="margin-top:16px;font-size:12.5px">Figures are devnet measurements from a single verifier build, not a mainnet guarantee. The 187,400 CU figure requires a <code style="color:var(--mint)">ComputeBudgetInstruction::SetComputeUnitLimit</code> bump; the default 200,000 limit leaves almost no headroom for your own logic in the same transaction.</p>
+</section>
+
+<footer>
+  <span>QUANTUM RESISTANT SOLANA PROTOCOL · research build, unaudited</span>
+  <span class="sp">Do not secure mainnet funds with this yet.</span>
+</footer>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---- lattice field ---- */
+  var cv = document.getElementById("field"), cx = cv.getContext("2d");
+  var pts = [], W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  function size(){
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr,0,0,dpr,0,0);
+    var n = Math.min(90, Math.round(W * H / 16000));
+    pts = [];
+    for (var i = 0; i < n; i++) pts.push({
+      x: Math.random()*W, y: Math.random()*H,
+      vx: (Math.random()-.5)*.22, vy: (Math.random()-.5)*.22
+    });
+  }
+  size();
+  window.addEventListener("resize", size);
+  var mx = -999, my = -999;
+  window.addEventListener("pointermove", function(e){ mx = e.clientX; my = e.clientY; });
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    for (var i=0;i<pts.length;i++){
+      var p = pts[i];
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > W) p.vx *= -1;
+      if (p.y < 0 || p.y > H) p.vy *= -1;
+      for (var j=i+1;j<pts.length;j++){
+        var q = pts[j], dx = p.x-q.x, dy = p.y-q.y, d = Math.sqrt(dx*dx+dy*dy);
+        if (d < 128){
+          var near = Math.hypot((p.x+q.x)/2 - mx, (p.y+q.y)/2 - my) < 150;
+          cx.strokeStyle = near ? "rgba(25,251,155," + (1-d/128)*.5 + ")"
+                                : "rgba(123,97,255," + (1-d/128)*.22 + ")";
+          cx.lineWidth = .7;
+          cx.beginPath(); cx.moveTo(p.x,p.y); cx.lineTo(q.x,q.y); cx.stroke();
+        }
+      }
+      cx.fillStyle = "rgba(190,205,235,.33)";
+      cx.fillRect(p.x-1, p.y-1, 2, 2);
+    }
+    requestAnimationFrame(draw);
+  }
+  if (!reduce) draw(); else { draw = null; (function(){ cx.clearRect(0,0,W,H);
+    for (var i=0;i<pts.length;i++){ cx.fillStyle="rgba(190,205,235,.3)"; cx.fillRect(pts[i].x,pts[i].y,2,2);} })(); }
+
+  /* ---- ticker ---- */
+  var items = [
+    ['slot <em>312,884,017</em>'], ['ratchet set · <em>7xKQ…p4Vn</em>'],
+    ['ML-DSA-65 verify <em>187,400 CU</em>'], ['ed25519 authority <em class="x">revoked</em>'],
+    ['chunk 3/3 <em>accepted</em>'], ['packet budget <em>1232 B</em>'],
+    ['falcon-512 path <em>666 B</em>'], ['session nonce <em>expired</em>'],
+    ['slot <em>312,884,019</em>'], ['ratchet set · <em>Gq2r…mD81</em>']
+  ];
+  var rail = document.getElementById("rail"), html = "";
+  for (var pass=0; pass<2; pass++)
+    for (var i=0;i<items.length;i++)
+      html += '<span class="' + (i%4===3 ? 'r' : '') + '">' + items[i][0] + '</span>';
+  rail.innerHTML = html.replace(/class="x"/g, "");
+
+  /* ---- bars ---- */
+  var fills = document.querySelectorAll(".fill");
+  setTimeout(function(){
+    for (var i=0;i<fills.length;i++) fills[i].style.width = fills[i].getAttribute("data-w") + "%";
+  }, reduce ? 0 : 260);
+
+  /* ---- counters ---- */
+  var nums = document.querySelectorAll("#stats b");
+  nums.forEach(function(el){
+    var to = +el.getAttribute("data-to"), suf = el.getAttribute("data-suf") || "";
+    if (reduce){ el.textContent = to.toLocaleString() + suf; return; }
+    var t0 = performance.now(), dur = 1300;
+    (function step(now){
+      var k = Math.min(1,(now-t0)/dur), e = 1-Math.pow(1-k,3);
+      el.textContent = Math.round(to*e).toLocaleString() + suf;
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  });
+
+  /* ---- card glow follows pointer ---- */
+  document.getElementById("cards").addEventListener("pointermove", function(e){
+    var c = e.target.closest(".card"); if (!c) return;
+    var r = c.getBoundingClientRect();
+    c.style.setProperty("--mx", (e.clientX - r.left) + "px");
+    c.style.setProperty("--my", (e.clientY - r.top) + "px");
+  });
+
+  /* ---- terminal ---- */
+  var lines = [
+    '<span class="d">$</span> qrsp commit --curve ed25519 --to ml-dsa-65',
+    '<span class="d">  pda</span>   <span class="k">Qrsp1…q7Hv</span>  <span class="d">rent 0.00234 SOL</span>',
+    '<span class="d">  pubkey</span> 1952 B  <span class="g">stored</span>',
+    '<span class="d">$</span> qrsp sign --chunked',
+    '<span class="d">  sig</span> 3309 B <span class="d">→</span> 3 instructions  <span class="d">[1104 / 1104 / 1101]</span>',
+    '<span class="d">  verify</span> <span class="g">ok</span>  <span class="d">187,400 CU · slot 312,884,017</span>',
+    '<span class="d">$</span> qrsp ratchet --confirm',
+    '<span class="d">  ed25519 authority</span> <span class="r">revoked — permanent</span>'
+  ];
+  var term = document.getElementById("term");
+  function render(upTo, partial){
+    var out = "";
+    for (var i=0;i<upTo;i++) out += lines[i] + "\n";
+    if (partial != null) out += partial;
+    term.innerHTML = out + '<span class="cur"></span>';
+  }
+  if (reduce){ render(lines.length, null); }
+  else {
+    var li = 0;
+    (function typeLine(){
+      if (li >= lines.length) return;
+      var full = lines[li], plain = full.replace(/<[^>]+>/g,""), k = 0;
+      var iv = setInterval(function(){
+        k += 2;
+        if (k >= plain.length){ clearInterval(iv); li++; render(li,null); setTimeout(typeLine, 190); }
+        else render(li, plain.slice(0,k));
+      }, 14);
+    })();
+  }
+
+  /* ---- attack clock ---- */
+  var btn = document.getElementById("run"), on = false, iv2 = null;
+  btn.addEventListener("click", function(){
+    on = !on;
+    if (!on){ clearInterval(iv2); btn.textContent = "Run the attack clock"; return; }
+    var t = 0;
+    iv2 = setInterval(function(){
+      t += 1;
+      var yrs = (8 - t*0.004).toFixed(3);
+      btn.textContent = "Est. years of margin: " + yrs;
+    }, 90);
+  });
+})();
+</script>
+</body>
+</html>
