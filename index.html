@@ -151,6 +151,11 @@
   ol.steps b{display:block;font-family:var(--display);font-size:15px;font-weight:600;margin-bottom:4px}
   ol.steps p{font-size:13px;margin:0}
 
+  .ca{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:20px;
+    border:1px solid var(--edge);background:var(--slab);padding:14px}
+  .ca code{font-family:var(--mono);font-size:12.5px;color:var(--mint);word-break:break-all;
+    flex:1 1 320px;min-width:0;user-select:all}
+  .ca .btn{padding:9px 16px;flex:none}
   footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--edge);
     display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:11.5px;color:var(--mute);letter-spacing:.06em}
   footer .sp{margin-left:auto}
@@ -178,7 +183,7 @@
   <a href="#problem">Threat</a>
   <a href="#design">Design</a>
   <a href="#numbers">Numbers</a>
-  <span class="live"><span class="dot"></span>DEVNET LIVE</span>
+  <span class="live"><span class="dot"></span>PRE-DEVNET</span>
 </nav>
 
 <header>
@@ -242,20 +247,31 @@
 </section>
 
 <section>
-  <p class="eyebrow">04 — Devnet to date</p>
-  <h2>What the verifier actually costs</h2>
+  <p class="eyebrow">04 — Design targets</p>
+  <h2>What the verifier is budgeted to cost</h2>
   <div class="stats" id="stats">
     <div class="stat"><b data-to="187400" data-suf="">0</b><span>CU per verify</span></div>
     <div class="stat"><b data-to="3" data-suf="">0</b><span>Instructions</span></div>
     <div class="stat"><b data-to="412" data-suf=" ms">0</b><span>Median finality</span></div>
     <div class="stat"><b data-to="9120" data-suf="">0</b><span>Keys ratcheted</span></div>
   </div>
-  <p style="margin-top:16px;font-size:12.5px">Figures are devnet measurements from a single verifier build, not a mainnet guarantee. The 187,400 CU figure requires a <code style="color:var(--mint)">ComputeBudgetInstruction::SetComputeUnitLimit</code> bump; the default 200,000 limit leaves almost no headroom for your own logic in the same transaction.</p>
+  <p style="margin-top:16px;font-size:12.5px">These are design targets for the verifier, not measurements of a deployed build — nothing is running on devnet yet. The 187,400 CU figure requires a <code style="color:var(--mint)">ComputeBudgetInstruction::SetComputeUnitLimit</code> bump; the default 200,000 limit leaves almost no headroom for your own logic in the same transaction.</p>
+</section>
+
+<section id="token">
+  <p class="eyebrow">05 — Token</p>
+  <h2>Contract address</h2>
+  <p>The QRSP token is a community token on Solana. It is not a security, it does not represent equity, and holding it grants no claim on the protocol described above.</p>
+  <div class="ca">
+    <code id="caText">3aFV8hjHRKycszoYG8hmE2z4Ne7PBf3KVr513Jq5pump</code>
+    <button class="btn" id="copyCa" type="button">Copy</button>
+  </div>
+  <p class="capt" style="margin-top:12px">Verify this address against a source you trust before sending anything. Addresses shown on any website, this one included, can be altered.</p>
 </section>
 
 <footer>
   <span>QUANTUM RESISTANT SOLANA PROTOCOL · research build, unaudited</span>
-  <span class="sp">Do not secure mainnet funds with this yet.</span>
+  <span class="sp">Concept protocol · nothing here is financial advice</span>
 </footer>
 </div>
 
@@ -389,6 +405,23 @@
       var yrs = (8 - t*0.004).toFixed(3);
       btn.textContent = "Est. years of margin: " + yrs;
     }, 90);
+  });
+
+  /* ---- copy contract address ---- */
+  var caBtn = document.getElementById("copyCa"), caText = document.getElementById("caText");
+  caBtn.addEventListener("click", function(){
+    function done(msg){ caBtn.textContent = msg; setTimeout(function(){ caBtn.textContent = "Copy"; }, 1600); }
+    var txt = caText.textContent.trim();
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ done("Copied"); }, select);
+    } else select();
+    function select(){
+      try {
+        var r = document.createRange(); r.selectNodeContents(caText);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        done("Selected");
+      } catch (e) { done("Select it"); }
+    }
   });
 })();
 </script>
